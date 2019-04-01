@@ -9,7 +9,9 @@ LABEL "com.github.actions.description"="Notify pull-requests which no reviewers 
 LABEL "com.github.actions.icon"="terminal"
 LABEL "com.github.actions.color"="gray-dark"
 
-COPY entrypoint.sh /entrypoint.sh
+COPY Gemfile Gemfile.lock /
+COPY entrypoint.rb /entrypoint.rb
+RUN bundle install
 
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["bundle", "exec", "/entrypoint.rb"]
 
