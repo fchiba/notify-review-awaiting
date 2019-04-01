@@ -2,17 +2,29 @@
 
 require 'octokit'
 require 'pp'
+require 'slack-ruby-client'
 
-client = Octokit::Client.new(:access_token => ENV['GITHUB_TOKEN'])
+GITHUB_TOKEN = ENV['GITHUB_TOKEN']
+GITHUB_REPOSITORY = ENV['GITHUB_REPOSITORY']
+WAITING_SECONDS = ENV['WAITING_SECONDS'].to_i
+SLACK_API_TOKEN = ENV['SLACK_API_TOKEN']
+SLACK_CHANNEL = ENV['SLACK_CHANNEL']
 
-pull_requests = client.pull_requests(ENV['GITHUB_REPOSITORY'], :state => 'open')
+github = Octokit::Client.new(:access_token => GITHUB_TOKEN)
+Slack.configure do |config|
+  config.token = SLACK_API_TOKEN
+end
+slack = Slack::Web::Client.new
+slack.auth_test
 
-pull_requests.each{ |pr|
-#	pp pr
-	if pr.created_at + (60*60*24) > Time.now && pr.requested_reviewers.empty?
-		p pr.title
-		p pr.html_url
-		p pr.created_at + (60*60*24) > Time.now
-	end
-}
+pull_requests = github.pull_requests(GITHUB_REPOSITORY, :state => 'open')
 
+waitings = pull_requests.find_all{ |pr| pr.created_at + WAITING_SECONDS < Time.now && pr.requested_reviewers.empty? && github.pull_request_reviews(GITHUB_REPOSITORY, pr.number).empty?}
+
+unless waitings.empty?
+	message = "Awaiting reviews:\n"
+	waitings.each{ |pr|
+		message += "*#{pr.title}* <#{pr.html_url}>\n"
+	}
+	slack.chat_postMessage(channel: SLACK_CHANNEL, text: message)
+end
