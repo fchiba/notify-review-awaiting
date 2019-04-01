@@ -1,4 +1,4 @@
-FROM debian:stable-slim
+FROM ruby:2.6
 
 LABEL "name"="notify-review-awaiting"
 LABEL "maintainer"="Fumiya Chiba <fumiya.chiba@nifty.com>"

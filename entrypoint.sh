@@ -1,3 +1,5 @@
-#!/bin/bash
+#!/usr/bin/env ruby
 
-echo "hello world"
+require 'octokit'
+
+puts "Hello World"
