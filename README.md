@@ -1,6 +1,6 @@
 # notify-review-awaiting
 
-You will be notified of PRs that are left wihtout reviews.
+You will be notified of PRs that are left wihtout reviewers.
 
 Use with Github Actions.
 
