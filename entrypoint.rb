@@ -21,10 +21,14 @@ pull_requests = github.pull_requests(GITHUB_REPOSITORY, :state => 'open')
 
 waitings = pull_requests.find_all{ |pr| pr.created_at + WAITING_SECONDS < Time.now && pr.requested_reviewers.empty? && github.pull_request_reviews(GITHUB_REPOSITORY, pr.number).empty?}
 
-unless waitings.empty?
-	message = "Awaiting reviews:\n"
-	waitings.each{ |pr|
-		message += "*#{pr.title}* <#{pr.html_url}>\n"
+exit if waitings.empty?
+
+message = "Awaiting reviews:\n"
+waitings_per_milestone = waitings.group_by { |pr| pr.milestone.title }
+waitings_per_milestone.keys.sort.each { |key|
+	message += ":triangular_flag_on_post: #{key}\n"
+	waitings_per_milestone[key].each { |pr|
+		message += " - *#{pr.title}* <#{pr.html_url}>\n"
 	}
-	slack.chat_postMessage(channel: SLACK_CHANNEL, text: message)
-end
+}
+slack.chat_postMessage(channel: SLACK_CHANNEL, text: message)
