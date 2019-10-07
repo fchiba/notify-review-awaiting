@@ -24,7 +24,7 @@ waitings = pull_requests.find_all{ |pr| pr.created_at + WAITING_SECONDS < Time.n
 exit if waitings.empty?
 
 message = "Awaiting reviews:\n"
-waitings_per_milestone = waitings.group_by { |pr| pr.milestone.title }
+waitings_per_milestone = waitings.group_by { |pr| pr.milestone ? pr.milestone.title : "No milestone" }
 waitings_per_milestone.keys.sort.each { |key|
 	message += ":triangular_flag_on_post: #{key}\n"
 	waitings_per_milestone[key].each { |pr|
